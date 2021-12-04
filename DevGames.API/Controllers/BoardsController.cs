@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using DevGames.API.Entities;
 using DevGames.API.Models;
-using DevGames.API.Persistence;
-using Microsoft.AspNetCore.Http;
+using DevGames.API.Persistence.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevGames.API.Controllers
 {
@@ -11,25 +11,25 @@ namespace DevGames.API.Controllers
     [ApiController]
     public class BoardsController : ControllerBase
     {
-        private readonly DevGamesContext context;
         private readonly IMapper mapper;
+        private readonly IBoardRepository repository;
 
-        public BoardsController(DevGamesContext context, IMapper mapper)
+        public BoardsController(IMapper mapper, IBoardRepository repository)
         {
-            this.context = context;
             this.mapper = mapper;
+            this.repository = repository;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(context.Boards);
+            return Ok(repository.GetAll());
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            Board board = context.Boards.SingleOrDefault(board => board.Id == id);
+            Board board = repository.GetById(id);
 
             if (board == null)
             {
@@ -42,18 +42,16 @@ namespace DevGames.API.Controllers
         [HttpPost]
         public IActionResult Post(AddBoardInputModel model/*, [FromServices] IMapper mapperFromMethod*/)
         {
-            //Board board = new Board(model.Id, model.GameTitle, model.Description, model.Rules);
             Board board = mapper.Map<Board>(model);
+            repository.Add(board);
 
-            context.Boards.Add(board);
-
-            return CreatedAtAction("GetById", new { id = model.Id }, model);
+            return CreatedAtAction("GetById", new { id = board.Id }, model);
         }
 
         [HttpPut("{id}")]
         public IActionResult Put(int id, UpdateBoardInputModel model)
         {
-            Board board = context.Boards.SingleOrDefault(board => board.Id == id);
+            Board board = repository.GetById(id);
 
             if (board == null)
             {
@@ -61,6 +59,7 @@ namespace DevGames.API.Controllers
             }
 
             board.Update(model.Description, model.Rules);
+            repository.Update(board);
 
             return NoContent();
         }

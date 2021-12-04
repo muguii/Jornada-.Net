@@ -1,11 +1,18 @@
 using DevGames.API.Mappers;
 using DevGames.API.Persistence;
+using DevGames.API.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton<DevGamesContext>();
+string connectionString = builder.Configuration.GetConnectionString("DevGamesConnectionString");
+builder.Services.AddDbContext<DevGamesContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IBoardRepository, BoardRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+
 builder.Services.AddAutoMapper(typeof(BoardMapper));
 
 builder.Services.AddControllers();

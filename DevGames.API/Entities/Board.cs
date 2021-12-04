@@ -9,13 +9,11 @@
         public DateTime CreatedAt { get; private set; }
         public List<Post> Posts { get; private set; }
 
-        public Board(int id, string gameTitle, string description, string rules)
+        public Board(string gameTitle, string description, string rules)
         {
-            Id = id;
             GameTitle = gameTitle;
             Description = description;
             Rules = rules;
-
             CreatedAt = DateTime.Now;
             Posts = new List<Post>();
         }
